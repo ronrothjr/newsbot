@@ -2,6 +2,7 @@ import re, requests
 from datetime import datetime, timedelta  
 from urllib.parse import urlparse, parse_qs
 from bs4 import BeautifulSoup
+from summarize import summarizeURL
 
 def get_article_summaries(keywords, top=None):
 
@@ -15,17 +16,20 @@ def get_article_summaries(keywords, top=None):
     soup = BeautifulSoup(response.content, "html.parser")
     url = 'https://www.google.com' + soup.find_all("a")[2].attrs['href']
     i = 0
-    end = 3 if top else 1
+    end = 1 if top else 2
     while i < end and url:
         i += 1
         [matching_articles, url] = get_articles(url, top)
 
         # Loop through the matching articles, summarize, and print them
         for article in matching_articles:
-            article['summary'] = get_summary(article['url'])
+            article['summary'] = ''
+            summary = summarizeURL(article['url'], 5)
+            if 'sm_api_content' in summary:
+                article['summary'] = summary['sm_api_content']
             print_article(article)
 
-def get_articles(url, top):
+def get_articles(url, top=10):
     response = requests.get(url)
     soup = BeautifulSoup(response.content, "html.parser")
 
@@ -64,28 +68,6 @@ def get_article(article):
             date = text.split('.')[-1]
         parent = parent.parent
     return {'title': title, 'date': date, 'url': link, 'text': text}
-
-def get_summary(url):
-    summary_url = 'https://smmry.com/sm_portal.php?&SM_TOKEN=4208879900&SM_POST_SAVE=0&SM_REDUCTION=-1&SM_CHARACTER=-1&SM_LENGTH=5&SM_URL=' + url
-    res = str(requests.get(summary_url).content)
-    res = re.sub(r'\[SM_a\]', "<span id=\"sm_flash_", res)
-    res = re.sub(r'\[SM_b\]', "\" onclick=\"sm_flash_process('", res)
-    res = re.sub(r'\[SM_c\]', "', this,", res)
-    res = re.sub(r'\[SM_d\]', ")\" onmouseover=\"sm_flash_add('", res)
-    res = re.sub(r'\[SM_e\]', "', this, ", res)
-    res = re.sub(r'\[SM_f\]', ");\" onmouseout=\"sm_flash_remove('", res)
-    res = re.sub(r'\[SM_g\]', ");\">", res)
-    res = re.sub(r'\[SM_h\]', "</span>", res)
-    res = re.sub(r'\[SM_i\]', "<span style=\"background-color:", res)
-    res = re.sub(r'\[SM_j\]', "rgb(255, ", res)
-    res = re.sub(r'\[SM_k\]', ", 0)\"> ", res)
-    res = re.sub(r'\[SM_l\]', "<br><br>", res)
-    res = re.sub(r'\[SM_m\]', "<sm_break><sm_break>", res)
-    res = re.sub(r'\[SM_n\]', "rgb(75, ", res)
-    res = res.split('SM_DIVIDE')[3]
-    summary_soup = BeautifulSoup(res, "html.parser")
-    summary_text = summary_soup.text
-    return summary_text
 
 def print_article(article):
     print("")
