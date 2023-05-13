@@ -1,16 +1,19 @@
-import re, requests
-from datetime import datetime, timedelta  
 from urllib.parse import urlparse, parse_qs
+from datetime import datetime, timedelta
+import requests
 from bs4 import BeautifulSoup
 from summarize import summarizeURL
+
+
+excluded = ['linkedin','tiktok','theknot']
 
 def get_article_summaries(keywords, top=None):
 
     print('')
-    print(f'SEARCH FOR: {keywords}')
+    print(f'SEARCH FOR: {" ".join(keywords)}')
     # Get the news articles from the last 7 days
     after = (datetime.now() - timedelta(days=7)).strftime("%Y-%m-%d")
-    url = "https://www.google.com/search?q=" + keywords + " after:" + after
+    url = "https://www.google.com/search?q=" + " ".join(keywords).replace('_','"') + " after:" + after
 
     response = requests.get(url)
     soup = BeautifulSoup(response.content, "html.parser")
@@ -20,14 +23,33 @@ def get_article_summaries(keywords, top=None):
     while i < end and url:
         i += 1
         [matching_articles, url] = get_articles(url, top)
-
         # Loop through the matching articles, summarize, and print them
         for article in matching_articles:
+            is_excluded = list(filter(lambda x: x in article['url'], excluded))
+            if len(is_excluded):
+                continue
+            if not is_article_keyword_match(article['url'], keywords):
+                continue
             article['summary'] = ''
             # summary = summarizeURL(article['url'], 5)
             # if 'sm_api_content' in summary:
             #     article['summary'] = summary['sm_api_content']
             print_article(article)
+
+def is_article_keyword_match(url, keywords):
+    response = requests.get(url).text
+    match = False
+    for word in keywords:
+        if '_' in word:
+            is_match = word.replace('_', '') in response
+        else:
+            is_match = word.replace('"', '').lower() in response.lower()
+        is_required = '"' in word
+        if is_required:
+            match = match and is_match
+        else:
+            match = match or is_match
+    return match
 
 def get_articles(url, top=10):
     response = requests.get(url)
@@ -55,6 +77,7 @@ def get_articles(url, top=10):
 
     return [matching_articles, url]
 
+
 def get_article(article):
     title = article.text
     parent = article.parent
@@ -69,6 +92,7 @@ def get_article(article):
         parent = parent.parent
     return {'title': title, 'date': date, 'url': link, 'text': text}
 
+
 def print_article(article):
     print("")
     print("Title:", f'[{article["date"]}] {article["title"]}')
@@ -76,16 +100,17 @@ def print_article(article):
     print("URL:", article['url'])
     print("SUMMARY:", article['summary'])
 
-get_article_summaries('"Brian Green"', 3)
-get_article_summaries('"Mark Graves"', 3)
-get_article_summaries('"Jason Thacker"', 3)
-get_article_summaries('"Michael Sacasas"', 3)
-get_article_summaries('"Nicoleta Acatrinei"', 3)
-get_article_summaries('"Gretchen Huizinga"', 3)
-get_article_summaries('"Mois Navon"', 3)
-get_article_summaries('"Michael Paulus"', 3)
-get_article_summaries('"Cory Labrecque"', 3)
-get_article_summaries('"Elias Kruger"', 3)
-get_article_summaries('"Trish Shaw"', 3)
-get_article_summaries('"Joanna Ng"', 3)
-get_article_summaries('moral impact of "generative AI"')
+
+get_article_summaries(['Artificial Intelligence', '_AI_', '"Brian Green"'], 3)
+get_article_summaries(['Artificial Intelligence', '_AI_', '"Mark Graves"'], 3)
+get_article_summaries(['Artificial Intelligence', '_AI_', '"Jason Thacker"'], 3)
+get_article_summaries(['Artificial Intelligence', '_AI_', '"Michael Sacasas"'], 3)
+get_article_summaries(['Artificial Intelligence', '_AI_', '"Nicoleta Acatrinei"'], 3)
+get_article_summaries(['Artificial Intelligence', '_AI_', '"Gretchen Huizinga"'], 3)
+get_article_summaries(['Artificial Intelligence', '_AI_', '"Mois Navon"'], 3)
+get_article_summaries(['Artificial Intelligence', '_AI_', '"Michael Paulus"'], 3)
+get_article_summaries(['Artificial Intelligence', '_AI_', '"Cory Labrecque"'], 3)
+get_article_summaries(['Artificial Intelligence', '_AI_', '"Elias Kruger"'], 3)
+get_article_summaries(['Artificial Intelligence', '_AI_', '"Trish Shaw"'], 3)
+get_article_summaries(['Artificial Intelligence', '_AI_', '"Joanna Ng"'], 3)
+get_article_summaries(['moral or religious impact of', '_AI_', '"generative AI"'])
