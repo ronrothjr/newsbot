@@ -24,9 +24,9 @@ def get_article_summaries(keywords, top=None):
         # Loop through the matching articles, summarize, and print them
         for article in matching_articles:
             article['summary'] = ''
-            summary = summarizeURL(article['url'], 5)
-            if 'sm_api_content' in summary:
-                article['summary'] = summary['sm_api_content']
+            # summary = summarizeURL(article['url'], 5)
+            # if 'sm_api_content' in summary:
+            #     article['summary'] = summary['sm_api_content']
             print_article(article)
 
 def get_articles(url, top=10):
