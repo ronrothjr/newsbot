@@ -11,16 +11,18 @@ class Newsbot(object):
 
     @staticmethod
     def article_search(keyword_searches):
+        results = ''
         if isinstance(keyword_searches, list):
             for keywords, top in keyword_searches:
                 Newsbot.get_article_summaries(keywords, top)
         else:
             keywords, top = keyword_searches
             Newsbot.get_article_summaries(keywords, top)
+        return results
 
     @staticmethod
     def get_article_summaries(keywords, top=None):
-
+        results = ''
         print('')
         print(f'SEARCH FOR: {" ".join(keywords)}')
         # Get the news articles from the last 7 days
@@ -46,7 +48,8 @@ class Newsbot(object):
                 # summary = summarizeURL(article['url'], 5)
                 # if 'sm_api_content' in summary:
                 #     article['summary'] = summary['sm_api_content']
-                Newsbot.print_article(article)
+                results += Newsbot.print_article(article)
+        return results
 
     @staticmethod
     def is_article_keyword_match(url, keywords):
@@ -108,9 +111,12 @@ class Newsbot(object):
 
     @staticmethod
     def print_article(article):
-        print("")
-        print("Title:", f'[{article["date"]}] {article["title"]}')
-        print("Text:", article['text'].replace(article['title'], ''))
-        print("URL:", article['url'])
+        article_text = '\n' + \
+            "Title:", f'[{article["date"]}] {article["title"]}' + '\n' + \
+            "Text:", article['text'].replace(article['title'], '') + '\n' + \
+            "URL:", article['url'] + '\n'
         if article['summary']:
-            print("SUMMARY:", article['summary'])
+            article_text = "SUMMARY:", article['summary'] + '\n'
+        for line in article_text.split('\n'):
+            print(line)
+        return article_text
