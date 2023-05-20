@@ -112,9 +112,9 @@ class Newsbot(object):
     @staticmethod
     def print_article(article):
         article_text = '\n' + \
-            "Title:", f'[{article["date"]}] {article["title"]}' + '\n' + \
-            "Text:", article['text'].replace(article['title'], '') + '\n' + \
-            "URL:", article['url'] + '\n'
+            f'Title: [{article["date"]}] {article["title"]}' + '\n' + \
+            f'Text: {article["text"].replace(article["title"], "")}' + '\n' + \
+            f'URL: {article["url"]}]' + '\n'
         if article['summary']:
             article_text = "SUMMARY:", article['summary'] + '\n'
         for line in article_text.split('\n'):

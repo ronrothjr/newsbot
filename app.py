@@ -1,5 +1,5 @@
 from newsbot import Newsbot
-from email import send_email
+from emailer import send_email
 
 if __name__ == '__main__':
     search_results = Newsbot.article_search([
