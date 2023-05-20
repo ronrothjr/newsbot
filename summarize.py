@@ -3,9 +3,8 @@ import os
 import sys
 import requests
 import json
+from credentials import SMMRY_URL, SMMRY_API_KEY
 
-SMMRY_API_KEY='D8B885C566'
-SMMRY_URL='https://api.smmry.com/'
 
 def summarizeText(text):
     url=SMMRY_URL+'&SM_API_KEY='+SMMRY_API_KEY
