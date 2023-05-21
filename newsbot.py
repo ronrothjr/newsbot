@@ -14,10 +14,10 @@ class Newsbot(object):
         results = ''
         if isinstance(keyword_searches, list):
             for keywords, top in keyword_searches:
-                Newsbot.get_article_summaries(keywords, top)
+                results += Newsbot.get_article_summaries(keywords, top)
         else:
             keywords, top = keyword_searches
-            Newsbot.get_article_summaries(keywords, top)
+            results += Newsbot.get_article_summaries(keywords, top)
         return results
 
     @staticmethod
